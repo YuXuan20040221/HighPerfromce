@@ -71,7 +71,7 @@ int main()
     finish_t = clock();
 
     double total_t = (double)(finish_t - start_t) / CLOCKS_PER_SEC;
-    printf("Program 2 Time: %lf seconds\n", total_t);
+    printf("Program 4 Time: %lf seconds\n", total_t);
     fflush(stdout); // 強制輸出
 
     // Free allocated memory
