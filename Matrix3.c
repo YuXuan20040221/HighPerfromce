@@ -5,30 +5,41 @@
 int main(void)
 {
     clock_t start_t, finish_t;
-    int m = 500, p = 600, n = 700,f;
+    int m = 500, p = 600, n = 700;
 
     // 使用動態記憶體分配
     int **A = (int **)malloc(m * sizeof(int *));
     int **B = (int **)malloc(n * sizeof(int *));
     int **C = (int **)malloc(m * sizeof(int *));
-    
-    for (int i = 0; i < m; i++) {
+    int **b = (int **)malloc(p * sizeof(int *));
+
+    for (int i = 0; i < m; i++)
+    {
         A[i] = (int *)malloc(n * sizeof(int));
         C[i] = (int *)malloc(p * sizeof(int));
     }
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < p; i++)
+    { // 修正：b 是 p x n
+        b[i] = (int *)malloc(n * sizeof(int));
+    }
+    for (int i = 0; i < n; i++)
+    {
         B[i] = (int *)malloc(p * sizeof(int));
     }
 
     // 初始化 A 和 B
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
             A[i][j] = 1;
         }
     }
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < p; j++) {
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < p; j++)
+        {
             B[i][j] = 1;
         }
     }
@@ -37,12 +48,19 @@ int main(void)
     start_t = clock();
     for (int j = 0; j < p; j++)
     {
+        for (int i = 0; i < n; i++)
+        {
+            b[j][i] = B[i][j];
+        }
+    }
+    for (int j = 0; j < p; j++)
+    {
         for (int i = 0; i < m; i++)
         {
             C[i][j] = 0; // 初始化 C[i][j] 為 0
             for (int k = 0; k < n; k++)
             {
-                C[i][j] += A[i][k] * B[k][j]; // 進行乘法並累加
+                C[i][j] += A[i][k] * b[j][k]; // 進行乘法並累加
             }
         }
     }
@@ -54,16 +72,18 @@ int main(void)
     fflush(stdout); // 強制輸出
 
     // 釋放動態記憶體
-    for (int i = 0; i < m; i++) {
+    for (int i = 0; i < m; i++)
+    {
         free(A[i]);
         free(C[i]);
     }
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         free(B[i]);
     }
     free(A);
     free(B);
     free(C);
-
+    free(b);
     return 0;
 }
