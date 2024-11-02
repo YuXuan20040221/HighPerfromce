@@ -9,7 +9,20 @@ public class Nonograms {
 
     public static void main(String[] args) {
         int[][] G = new int[5][5];
-        PROPAGATE(G);
+        int[] L = { -1, -1, -1, -1, -1 };
+        LinkedList<Integer> D = new LinkedList<>();
+        D.add(2);
+        D.add(2);
+        if (Fix0(5, 2, D)) {
+            System.out.println("Fix0");
+        } else if (Fix1(5, 2, D)) {
+            System.out.println("Fix1");
+        } else {
+            System.out.println("err");
+        }
+        for (int p : Paint(5, 2, D, L)) {
+            System.out.println(p);
+        }
     }
 
     static void FP(int[][] G) {
@@ -58,13 +71,17 @@ public class Nonograms {
         // 做while
         while (!LG.isEmpty()) {
             int[] L = LG.poll();// 從LG拿一行L
-            String[] D = DG.getFirst().split(" "); // 拆答案
+            String[] d = DG.getFirst().split(" "); // 拆答案
+            LinkedList<Integer> D = new LinkedList<>();
+            for (String p : d) {
+                D.add(Integer.valueOf(p));// D 塞條件
+            }
             int[] indexInfo = indexList.poll(); // 拿一行位置
             int SR = L.length;
-            int DR = D.length;
+            int DR = D.size();
 
             // 6.
-            if (!Fix(SR, DR)) {
+            if (!Fix0(SR, DR, D) && !Fix1(SR, DR, D)) {
                 statusG = -1;
                 return;
             }
@@ -125,12 +142,94 @@ public class Nonograms {
         }
     }
 
-    static int[] Paint(int i, int i, String[] D, int[] L) {
-        int[] l = L;
+    static int[] Paint(int i, int j, LinkedList<Integer> D, int[] L) {
         if (i == 0) {
-            return l;
+            return L;
         }
-        return l;
+
+        // Paint'(i,j)
+        if (Fix0(i, j, D) && !Fix1(i, j, D)) {
+            return Paint0(i, j, D, L);
+        } else if (!Fix0(i, j, D) && Fix1(i, j, D)) {
+            return Paint1(i, j, D, L);
+        } else {
+            return Merge(Paint0(i, j, D, L), Paint1(i, j, D, L));
+        }
+    }
+
+    static int[] Paint0(int i, int j, LinkedList<Integer> D, int[] L) {
+        int[] previousPaint = Paint(i - 1, j, D, L);
+        int[] result = new int[previousPaint.length + 1];
+        // 把前幾格的內容先複製到result裡
+        System.arraycopy(previousPaint, 0, result, 0, previousPaint.length);
+        result[result.length - 1] = 0; // 在最後加 0
+        return result;
+    }
+
+    static int[] Paint1(int i, int j, LinkedList<Integer> D, int[] L) {
+        if (D.isEmpty()) {
+            return L;
+        }
+        int dj = D.removeFirst(); // dj = 要填1的格子數
+        int[] previousPaint = Paint(i - dj - 1, j - 1, D, L);
+        int[] result = new int[previousPaint.length + dj];
+        System.arraycopy(previousPaint, 0, result, 0, previousPaint.length);
+        for (int k = previousPaint.length; k < result.length; k++) {
+            result[k] = 1; // 填1
+        }
+        return result;
+    }
+
+    static int[] Merge(int[] s, int[] t) {
+        int[] merged = new int[5];
+        for (int k = 0; k < 5; k++) {
+            merged[k] = MergeC(s[k], t[k]);
+        }
+        return merged;
+    }
+
+    static int MergeC(int sk, int tk) {
+        if (sk == 0 && tk == 0) {
+            return 0;
+        } else if (sk == 1 && tk == 1) {
+            return 1;
+        } else {
+            return -1; // -1 = 還沒填
+        }
+    }
+
+    static Boolean Fix0(int i, int j, LinkedList<Integer> D) {
+        System.out.println("Fix0:" + i + " " + j);
+        if (i == 0 && j == 0) {
+            return true;
+        } else if (i == 0 && j > 0) {
+            return false;
+        } else if (i < 0 || j < 0) {
+            return false; // 防止負值遞歸
+        } else {
+            return Fix1(i - 1, j, D) || Fix0(i - 1, j, D);
+        }
+    }
+
+    static Boolean Fix1(int i, int j, LinkedList<Integer> D) {
+        System.out.println("Fix1:" + i + " " + j);
+        LinkedList<Integer> d = new LinkedList<>();
+        for (int p : D) {
+            d.add(p);
+        }
+        if (i == 0 && j == 0) {
+            return true;
+        } else if (i == 0 && j > 0) {
+            return false;
+        } else if (i < 0 || j < 0 || D.isEmpty()) {
+            return false; // 防止負值遞歸或 D 為空
+        } else {
+            int dj = d.removeFirst();
+            if (d.isEmpty()) {// 最後一個要填1的就不用留空位了直接塞
+                i++;
+            }
+            return Fix1(i - dj - 1, j - 1, d) || Fix0(i - dj - 1, j - 1, d);
+        }
     }
 
     static int status(Object o) {
@@ -140,16 +239,6 @@ public class Nonograms {
 
     static void UPDATEONALLG(Object o) {
         // 這我也不知道是啥先放放
-    }
-
-    static boolean Fix(int i, int j) {
-        if (i == 0 && j == 0) {
-            return true;
-        } else if (i == 0 && j > 0) {
-            return false;
-        } else {
-            return 
-        }
     }
 
     static void PROBE(int p) {
