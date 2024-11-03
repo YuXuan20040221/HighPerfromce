@@ -12,16 +12,9 @@ public class Nonograms {
         int[] L = { -1, -1, -1, -1, -1 };
         LinkedList<Integer> D = new LinkedList<>();
         D.add(2);
-        D.add(2);
-        if (Fix0(5, 2, D)) {
-            System.out.println("Fix0");
-        } else if (Fix1(5, 2, D)) {
-            System.out.println("Fix1");
-        } else {
-            System.out.println("err");
-        }
-        for (int p : Paint(5, 2, D, L)) {
-            System.out.println(p);
+        // D.add(2);
+        for (int p : Paint(5, D.size(), D, L)) {
+            System.out.print(p);
         }
     }
 
@@ -143,26 +136,41 @@ public class Nonograms {
     }
 
     static int[] Paint(int i, int j, LinkedList<Integer> D, int[] L) {
-        if (i == 0) {
+        if (i <= 0) {
             return L;
         }
-
         // Paint'(i,j)
-        if (Fix0(i, j, D) && !Fix1(i, j, D)) {
-            return Paint0(i, j, D, L);
-        } else if (!Fix0(i, j, D) && Fix1(i, j, D)) {
-            return Paint1(i, j, D, L);
-        } else {
-            return Merge(Paint0(i, j, D, L), Paint1(i, j, D, L));
+        Boolean f0 = Fix0(i, j, D);
+        Boolean f1 = Fix1(i, j, D);
+        int[] p0 = L;
+        int[] p1 = L;
+        if (f0) {
+            p0 = Paint0(i, j, D, L);
         }
+        if (f1) {
+            p1 = Paint1(i, j, D, L);
+        }
+        int[] p;
+        if (f0 && f1) {
+            p = Merge(p1, p0);
+        } else if (f0 && !f1) {
+            p = p0;
+        } else if (f1 && !f0) {
+            p = p1;
+        } else {
+            p = L;
+        }
+
+        return p;
     }
 
     static int[] Paint0(int i, int j, LinkedList<Integer> D, int[] L) {
-        int[] previousPaint = Paint(i - 1, j, D, L);
-        int[] result = new int[previousPaint.length + 1];
-        // 把前幾格的內容先複製到result裡
-        System.arraycopy(previousPaint, 0, result, 0, previousPaint.length);
-        result[result.length - 1] = 0; // 在最後加 0
+        if (i <= 0) {
+            return L;
+        }
+        int[] result = L.clone();
+        result[i - 1] = 0;
+        result = Paint(i - 1, j, D, result);
         return result;
     }
 
@@ -170,12 +178,23 @@ public class Nonograms {
         if (D.isEmpty()) {
             return L;
         }
-        int dj = D.removeFirst(); // dj = 要填1的格子數
-        int[] previousPaint = Paint(i - dj - 1, j - 1, D, L);
-        int[] result = new int[previousPaint.length + dj];
-        System.arraycopy(previousPaint, 0, result, 0, previousPaint.length);
-        for (int k = previousPaint.length; k < result.length; k++) {
-            result[k] = 1; // 填1
+        LinkedList<Integer> d = new LinkedList<>();
+        for (int p : D) {
+            d.add(p);
+        }
+        int dj = d.removeLast(); // dj = 要填1的格子數
+        if (i < dj) {
+            return L;
+        }
+        int[] result = L.clone();
+        for (int k = i - 1; k >= i - dj; k--) {
+            result[k] = 1;
+        }
+        if (i == dj) {
+            result = Paint(i - dj, j - 1, d, result);
+        } else {
+            result[i - dj - 1] = 0;
+            result = Paint(i - dj - 1, j - 1, d, result);
         }
         return result;
     }
@@ -199,7 +218,6 @@ public class Nonograms {
     }
 
     static Boolean Fix0(int i, int j, LinkedList<Integer> D) {
-        System.out.println("Fix0:" + i + " " + j);
         if (i == 0 && j == 0) {
             return true;
         } else if (i == 0 && j > 0) {
@@ -212,7 +230,6 @@ public class Nonograms {
     }
 
     static Boolean Fix1(int i, int j, LinkedList<Integer> D) {
-        System.out.println("Fix1:" + i + " " + j);
         LinkedList<Integer> d = new LinkedList<>();
         for (int p : D) {
             d.add(p);
