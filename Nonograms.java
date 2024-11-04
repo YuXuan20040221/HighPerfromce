@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Nonograms {
-    static int X = 5;
+    static int X = 10;
     // static int[][] G0, G1, G2 = new int[X][X]; // 圖
 
     static int statusG = 0; // -1 = CONFLICT; 0 = INCOMPLETE; 1 = COMPLETE.
@@ -28,7 +28,6 @@ public class Nonograms {
                     ans[i][j] = scanner.nextLine();
                 }
             }
-            
 
             // 測試propagate
             G = PROPAGATE(G, ans);
@@ -99,19 +98,26 @@ public class Nonograms {
 
         // 做while
         while (!LG.isEmpty()) {
-
+            // System.out.print("stack:");
+            // for (int[] elem : indexList) {
+            //     for (int i : elem) {
+            //         System.out.print(i);
+            //     }
+            //     System.out.print(" ");
+            // }
+            // System.out.println("");
             // 拿一串格子
             int[] L = LG.removeFirst();// 從LG拿一行L
 
             // 拿一串條件
             String[] d = DG.removeFirst().split(" "); // 拆答案
             LinkedList<Integer> D = new LinkedList<>(); // 裝答案用的list
-            System.out.print("D:");
+            // System.out.print("D:");
             for (String p : d) {// 塞條件進去
                 D.add(Integer.valueOf(p));
-                System.out.print(p);
+                // System.out.print(p);
             }
-            System.out.println();
+            // System.out.println();
 
             // 拿一個位置
             int[] indexInfo = indexList.removeFirst();
@@ -159,11 +165,11 @@ public class Nonograms {
             // // 9. 把有改過p的那行放進去再檢查
             if (indexInfo[0] == 1) { // 橫的第幾個有變，加直的第幾行
                 for (int p : II) {
-                    if (!indexList.contains(new int[] { 0, p })) {// 如果G沒有就放進去
-                        int[] col = new int[X];
-                        for (int i = 0; i < X; i++) {
-                            col[i] = IIG[i][p];
-                        }
+                    int[] col = new int[X];
+                    for (int i = 0; i < X; i++) {
+                        col[i] = IIG[i][p];
+                    }
+                    if (!LG.contains(col)) {// 如果沒有就放進去
                         LG.add(col); // 放圖
                         DG.add(ans[0][p]); // 放題目
                         indexList.add(new int[] { 0, p }); // 放位置
@@ -171,7 +177,7 @@ public class Nonograms {
                 }
             } else { // 直的有變加橫的
                 for (int p : II) {
-                    if (!indexList.contains(new int[] { 1, p })) {
+                    if (!LG.contains(IIG[p])) {
                         LG.add(IIG[p]);
                         DG.add(ans[1][p]);
                         indexList.add(new int[] { 1, p });
@@ -186,18 +192,18 @@ public class Nonograms {
                 statusG = 0;
             }
             // 試印看看
-            System.out.println("index:" + indexInfo[0] + indexInfo[1]);
-            for (int j = 0; j < X; j++) {
-                System.out.printf("%3d", newPainted[j]);
-            }
-            System.out.println("\n");
-            for (int i = 0; i < X; i++) {
-                for (int j = 0; j < X; j++) {
-                    System.out.printf("%3d", IIG[i][j]);
-                }
-                System.out.println();
-            }
-            System.out.println("\n");
+            // System.out.println("index:" + indexInfo[0] + indexInfo[1]);
+            // for (int j = 0; j < X; j++) {
+            //     System.out.printf("%3d", newPainted[j]);
+            // }
+            // System.out.println("\n");
+            // for (int i = 0; i < X; i++) {
+            //     for (int j = 0; j < X; j++) {
+            //         System.out.printf("%3d", IIG[i][j]);
+            //     }
+            //     System.out.println();
+            // }
+            // System.out.println("\n");
         }
         return IIG;
     }
